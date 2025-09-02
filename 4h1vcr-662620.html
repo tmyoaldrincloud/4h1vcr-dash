@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="tl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NODE-662620</title>
+  
+  <center>
+    <H1>4H1VCR NODE-662620 ALL-STAR LINK DASHBOARD</H1>
+    <p>All Nodes 589360 1796 589361 1794 1795 589362 LsNodes</p>
+  </center>
+  
+  <style>
+    html,body{
+      height:130%;
+      margin:0;
+      font-family: system-ui, sans-serif;
+      background: linear-gradient(135deg, orange 0%, #ffb347 30%, #fff5a3 60%, yellow 90%);
+    }
+
+    .wrap{
+      box-sizing:border-box;
+      max-width: 1600px;
+      margin:24px auto;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .top-row{
+      display:flex;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .box{
+      background:rgba(255,255,255,0.15);
+      border-radius:12px;
+      box-shadow:0 10px 20px rgba(0,0,0,0.18);
+      overflow:hidden;
+      position:relative;
+      touch-action:none;
+      user-select:none;
+      flex:1 1 45%;
+      min-width:250px;
+      min-height:350px;
+    }
+
+    .box3{
+      flex: 1 1 45%;
+      min-width: 350px;
+      min-height: 500px;
+    }
+
+
+    iframe{
+      border:0;
+      width:100%;
+      height:100%;
+      display:block;
+      background:white;
+    }
+
+    .label{
+      position:absolute;
+      top:8px;
+      left:8px;
+      z-index:6;
+      background:rgba(0,0,0,0.5);
+      color:#fff;
+      font-size:13px;
+      padding:6px 8px;
+      border-radius:8px;
+      backdrop-filter: blur(4px);
+    }
+
+    .hint{
+      position:absolute;
+      bottom:8px;
+      right:8px;
+      z-index:6;
+      background:rgba(255,255,255,0.85);
+      color:#111;
+      font-size:12px;
+      padding:6px 8px;
+      border-radius:8px;
+    }
+
+    /* Resize handles (8 directions) */
+    .resizer {
+      position:absolute;
+      background:transparent;
+    }
+    .resizer.n { top:0; left:0; right:0; height:6px; cursor:n-resize; }
+    .resizer.s { bottom:0; left:0; right:0; height:6px; cursor:s-resize; }
+    .resizer.e { top:0; right:0; bottom:0; width:6px; cursor:e-resize; }
+    .resizer.w { top:0; left:0; bottom:0; width:6px; cursor:w-resize; }
+    .resizer.nw { top:0; left:0; width:10px; height:10px; cursor:nw-resize; }
+    .resizer.ne { top:0; right:0; width:10px; height:10px; cursor:ne-resize; }
+    .resizer.sw { bottom:0; left:0; width:10px; height:10px; cursor:sw-resize; }
+    .resizer.se { bottom:0; right:0; width:10px; height:10px; cursor:se-resize; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-row">
+      <div class="box" id="box1">
+        <div class="label">DX1E DASHBOARD</div>
+        <div class="hint">Drag to move</div>
+         <iframe src="https://dx1e.kapihan.net/link.php?nodes=589360,589361,1796,1795,1794"></iframe>
+      </div>
+
+      <div class="box" id="box2">
+        <div class="label">4H1VCR LOCAL SYSTEM</div>
+        <div class="hint">Drag to move</div>
+         <iframe src="http://192.168.100.29/supermon/link.php?nodes=662620"></iframe>
+      </div>
+ 
+      <div class="box" id="box3">
+        <div class="label">DX1E DIRECTORY</div>
+        <div class="hint">Drag to move</div>
+         <iframe src="dx1e-directory.html"></iframe>
+         <div class="resizer n"></div><div class="resizer s"></div>
+      </div>
+      
+      
+      
+      <script>
+    // Dragging + Resizing
+    (function(){
+      const boxes = document.querySelectorAll('.box');
+      boxes.forEach(el => {
+        // --- Dragging ---
+        let drag = false, startX=0, startY=0, lastX=0, lastY=0, pid=null;
+        function setTranslate(x,y){ el.style.transform=`translate(${x}px,${y}px)`; el.dataset.tx=x; el.dataset.ty=y; }
+        el.addEventListener('pointerdown', e=>{
+          // ignore if clicked on resizer
+          if(e.target.classList.contains('resizer')) return;
+          if(e.button!==0 && e.pointerType!=="touch") return;
+          drag=true; pid=e.pointerId;
+          startX=e.clientX; startY=e.clientY;
+          lastX=parseFloat(el.dataset.tx||0); lastY=parseFloat(el.dataset.ty||0);
+          el.setPointerCapture(pid);
+          const ifr=el.querySelector('iframe'); if(ifr) ifr.style.pointerEvents='none';
+        });
+        document.addEventListener('pointermove', e=>{
+          if(!drag||e.pointerId!==pid) return;
+          const dx=e.clientX-startX, dy=e.clientY-startY;
+          setTranslate(lastX+dx,lastY+dy);
+        });
+        document.addEventListener('pointerup', e=>{
+          if(!drag||e.pointerId!==pid) return;
+          drag=false; pid=null;
+          const ifr=el.querySelector('iframe'); if(ifr) ifr.style.pointerEvents='';
+        });
+
+        // --- Resizing ---
+        const resizers = el.querySelectorAll('.resizer');
+        resizers.forEach(r=>{
+          let resizing=false, sx=0, sy=0, sw=0, sh=0, sl=0, st=0;
+          r.addEventListener('pointerdown', e=>{
+            e.stopPropagation();
+            resizing=true;
+            sx=e.clientX; sy=e.clientY;
+            const rect=el.getBoundingClientRect();
+            sw=rect.width; sh=rect.height; sl=rect.left; st=rect.top;
+            r.setPointerCapture(e.pointerId);
+          });
+          document.addEventListener('pointermove', e=>{
+            if(!resizing) return;
+            const dx=e.clientX-sx, dy=e.clientY-sy;
+            let newW=sw, newH=sh, newX=sl, newY=st;
+            if(r.classList.contains('e')) newW=sw+dx;
+            if(r.classList.contains('s')) newH=sh+dy;
+            if(r.classList.contains('w')){ newW=sw-dx; newX=sl+dx; }
+            if(r.classList.contains('n')){ newH=sh-dy; newY=st+dy; }
+            if(r.classList.contains('ne')){ newW=sw+dx; newH=sh-dy; newY=st+dy; }
+            if(r.classList.contains('nw')){ newW=sw-dx; newX=sl+dx; newH=sh-dy; newY=st+dy; }
+            if(r.classList.contains('se')){ newW=sw+dx; newH=sh+dy; }
+            if(r.classList.contains('sw')){ newW=sw-dx; newX=sl+dx; newH=sh+dy; }
+            if(newW>200){ el.style.width=newW+"px"; }
+            if(newH>150){ el.style.height=newH+"px"; }
+            el.style.left=newX+"px"; el.style.top=newY+"px";
+            el.style.position="absolute";
+          });
+          document.addEventListener('pointerup', e=>{ resizing=false; });
+        });
+      });
+    })();
+  </script>
+  
+  <p>
+   - System maintained by:   Aldrin,   4H1VCR
+   <br>
+   <iframe scrolling="no" frameborder="no" clocktype="html5" style="overflow:hidden;border:0;margin:0;padding:0;width:240px;height:80px;"src="https://www.clocklink.com/html5embed.php?clock=004&timezone=Philippines_Manila&color=red&size=240&Title=&Message=&Target=&From=2025,1,1,0,0,0&Color=red"></iframe>
+  </p>
+</body>
+</html>
